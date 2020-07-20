@@ -1,4 +1,4 @@
-package com.example.vertx.rxvertx_college;
+package com.example.vertx.rxvertx_college.datasource;
 
 
 import java.util.UUID;
@@ -14,7 +14,7 @@ public enum Departments {
   MATHES(UUID.randomUUID());
 
 
-  String department_id;
+  public String department_id;
 
   Departments(UUID department_id) {
     this.department_id = department_id.toString();

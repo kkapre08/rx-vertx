@@ -1,5 +1,6 @@
-package com.example.vertx.rxvertx_college;
+package com.example.vertx.rxvertx_college.datasource;
 
+import com.example.vertx.rxvertx_college.datasource.Departments;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
