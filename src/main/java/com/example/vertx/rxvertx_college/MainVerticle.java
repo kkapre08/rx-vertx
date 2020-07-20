@@ -41,18 +41,15 @@
 
 package com.example.vertx.rxvertx_college;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 //import io.vertx.example.util.Runner;
-import io.vertx.ext.sql.ResultSet;
 import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.reactivex.core.http.HttpServerResponse;
-import io.vertx.reactivex.ext.jdbc.JDBCClient;
-import io.reactivex.Single;
 import io.vertx.reactivex.ext.web.Router;
+import io.vertx.reactivex.ext.web.RoutingContext;
+import io.vertx.reactivex.ext.web.handler.BodyHandler;
 import io.vertx.reactivex.redis.RedisClient;
 import io.vertx.reactivex.redis.client.Redis;
 import io.vertx.reactivex.redis.client.RedisAPI;
@@ -60,43 +57,42 @@ import io.vertx.reactivex.redis.client.RedisConnection;
 //import io.vertx.reactivex.redis.RedisClient;
 import io.vertx.redis.client.RedisOptions;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-//import io.vertx.redis.RedisClient;
+import java.util.*;
 
 /*
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 public class MainVerticle extends AbstractVerticle {
 
-  // Convenience method so you can run it in your IDE
-//  public static void main(String[] args) {
-//    Runner.runExample(Client.class);
-//  }
+
+  RedisClient redisClient;
 
   @Override
   public void start(Future<Void> fut) throws Exception {
 
-//    getConnection();
+      redisClient = RedisClient.create(vertx, new JsonObject());
 
-    RedisClient redisClient = RedisClient.create(vertx, new JsonObject());
-
-    redisClient.set("mykey-2","myvalue-2", e -> {
-        if(e.succeeded()) {
-          System.out.println("successfully stored value 2");
-        } else if(e.failed()) {
-          System.out.println("failed to store value 2");
-        }
-    });
+//          redisClient.set("mykey-2","myvalue-2", e -> {
+//        if(e.succeeded()) {
+//          System.out.println("successfully stored value 2");
+//        } else if(e.failed()) {
+//          System.out.println("failed to store value 2");
+//        }
+//    });
 
     Router router = Router.router(vertx);
 
-    router.route("/hello").handler(e -> {
-      HttpServerResponse serverResponse = e.response();
-      getConnection(serverResponse);
-    });
+    router.route().handler(BodyHandler.create());
+
+    router.get("/students/:studentId").handler(this::getStudent);
+
+    router.get("/init-db").handler(this::initRedisDB);
+
+    router.delete("/students/:studentId").handler(this::deleteKey);
+
+    router.post("/students").handler(this::insertStudent);
+
+    router.put("/students/:studentId").handler(this::updateStudent);
 
     vertx.createHttpServer()
       .requestHandler(router::accept)
@@ -112,6 +108,175 @@ public class MainVerticle extends AbstractVerticle {
       });
   }
 
+
+  public void initRedisDB(RoutingContext routingContext) {
+
+    HttpServerResponse serverResponse = routingContext.response();
+
+    JsonArray students = StudentDataSource.getStudents();
+
+    System.out.println("Students: "+students);
+
+    for (Object student: students) {
+
+      JsonObject jsonObject = (JsonObject) student;
+
+      redisClient.set(jsonObject.getString("studentId"),jsonObject.toString(), r -> {
+
+          if(r.succeeded()) {
+
+            System.out.println("Student data initialized");
+
+          } else if(r.failed()) {
+
+            System.out.println("Student data initialization failed");
+
+          }
+      });
+      serverResponse.setStatusCode(200).end(students.toString());
+    }
+  }
+
+
+  private void insertStudent(RoutingContext routingContext) {
+
+    System.out.println("Student stored request");
+
+    JsonObject student = routingContext.getBodyAsJson();
+
+    System.out.println("Student stored "+routingContext.getBodyAsString());
+
+    String studentId = UUID.randomUUID().toString();
+
+    student.put("studentId", studentId);
+
+    HttpServerResponse serverResponse = routingContext.response();
+
+    Optional<Departments>  departmentName =
+      Arrays.stream(Departments.values()).filter(e -> e.toString().equals(student.getString("DepartmentName"))).findAny();
+
+//    validations before inserting students
+    if(studentId==null || !"STUDENT".equals(student.getString("docType"))
+      || !departmentName.isPresent()) {
+
+      serverResponse.setStatusCode(400).end("Invalid student request");
+
+    } else {
+
+      student.put("DepartmentID", departmentName.get().department_id);
+
+      redisClient.set(student.getString("studentId"),student.toString(), r -> {
+        if (r.succeeded()) {
+          serverResponse.setStatusCode(200).end(student.toString());
+        } else if(r.failed()) {
+          serverResponse.setStatusCode(500).end("Failed to insert the student");
+        }
+      });
+    }
+  }
+
+  private void updateStudent(RoutingContext routingContext) {
+
+    JsonObject student = routingContext.getBodyAsJson();
+
+    String studentId = routingContext.pathParam("studentId");
+
+    HttpServerResponse serverResponse = routingContext.response();
+
+    Optional<Departments>  departmentName =
+      Arrays.stream(Departments.values()).filter(e -> e.toString().equals(student.getString("DepartmentName"))).findAny();
+
+//    validations before inserting students
+    if(studentId==null || !"STUDENT".equals(student.getString("docType"))
+      || !departmentName.isPresent()) {
+
+      serverResponse.setStatusCode(400).end("Invalid student request");
+
+    } else {
+
+      student.put("DepartmentID", departmentName.get().department_id);
+
+      student.put("studentId", studentId);
+
+      redisClient.get(studentId, r -> {
+
+        if(r.succeeded()) {
+
+          if(r!=null && r.result()!=null) {
+
+            redisClient.set(student.getString("studentId"),student.toString(), u -> {
+
+              if (u.succeeded()) {
+                serverResponse.setStatusCode(200).end(student.toString());
+              } else if(u.failed()) {
+                serverResponse.setStatusCode(500).end("Failed to insert the student");
+              }
+
+            });
+
+          } else {
+
+            serverResponse.setStatusCode(400).end("Student not found in the system");
+
+            System.out.println("Student not found in the system");
+          }
+        } else if(r.failed()) {
+          serverResponse.setStatusCode(500).end( "Failed to retrieve student details");
+        }
+      });
+
+//      redisClient.set(student.getString("studentId"),student.toString(), r -> {
+//        if (r.succeeded()) {
+//          serverResponse.setStatusCode(200).end(student.toString());
+//        } else if(r.failed()) {
+//          serverResponse.setStatusCode(500).end("Failed to insert the student");
+//        }
+//      });
+    }
+  }
+
+  private void getStudent(RoutingContext routingContext) {
+
+    HttpServerResponse serverResponse = routingContext.response();
+
+    String studentId = routingContext.pathParam("studentId");
+
+    redisClient.get(studentId, r -> {
+      if(r.succeeded()) {
+        if(r!=null && r.result()!=null) {
+          serverResponse.setStatusCode(200).end(r.result());
+        } else {
+          serverResponse.setStatusCode(400).end( "Student not found");
+        }
+      } else if(r.failed()) {
+        serverResponse.setStatusCode(500).end( "Failed to retrieve student details");
+      }
+    });
+  }
+
+
+  private void deleteKey (RoutingContext routingContext) {
+
+    HttpServerResponse serverResponse = routingContext.response();
+
+    String studentId = routingContext.pathParam("studentId");
+
+    redisClient.del(studentId, r -> {
+      if(r.succeeded()) {
+        if(r!=null && r.result()!=null) {
+          System.out.println("Successfully deleted the Key" + r.result());
+          serverResponse.setStatusCode(200).end("Student deleted successfully");
+        } else {
+          serverResponse.setStatusCode(400).end("Student with the provided key not found");
+        }
+      } else if(r.failed()) {
+          serverResponse.setStatusCode(500).end("Failed to execute the delete operation");
+      }
+    });
+  }
+
+
+  //not used in current code
   private  RedisConnection getConnection(HttpServerResponse serverResponse) {
 
     List<String> result = new ArrayList<>();
@@ -153,6 +318,7 @@ public class MainVerticle extends AbstractVerticle {
     return null;
   }
 
+  //not used in current code
   private void getKeyValue(HttpServerResponse serverResponse, RedisAPI redis) {
     redis.get("mykey1", e-> {
       if(e.succeeded()) {
