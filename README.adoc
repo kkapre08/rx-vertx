@@ -1,8 +1,9 @@
 
 == About this application
 
-This is a basic implementation of Reactive Vertx REST API with event bus. This application uses Redis database.
-To run this application successfully please make sure Redis is running on default port 6379.
+This application is a basic implementation of Reactive Vertx. This application has basic supporting CRUD operation. It uses event bus to communicate between Verticles. 
+
+This application uses Redis database.To run this application successfully please make sure Redis DB is running on default port 6379.
 
 
 == Curl commands to use the REST API's
