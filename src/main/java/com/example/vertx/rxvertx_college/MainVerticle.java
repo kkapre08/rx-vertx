@@ -31,6 +31,7 @@ public class MainVerticle extends AbstractVerticle {
   public static final String RESPONSE_REPLY = "Thank you!";
 
   public static final String FAILED_TO_PROCESS = "Failed to process the request";
+
   public static final String INVALID_STUDENT_REQUEST = "Invalid student request";
 
   RedisClient redisClient;
