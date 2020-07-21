@@ -16,7 +16,7 @@ public class StudentDataSource {
     student1.put(Constants.STUDENT_ID, UUID.randomUUID().toString());
     student1.put(Constants.DOC_TYPE, Constants.STUDENT_DOC_TYPE);
     student1.put(Constants.NAME, "Robert Wallas");
-    student1.put(Constants.PHONE_NUMBER,new Random().nextLong());
+    student1.put(Constants.PHONE_NUMBER, getPhoneNumber());
     student1.put(Constants.DEPARTMENT_NAME, Departments.COMPUTER_SCIENCE);
     student1.put(Constants.DEPARTMENT_ID, Departments.COMPUTER_SCIENCE.department_id);
 
@@ -24,7 +24,7 @@ public class StudentDataSource {
     student2.put(Constants.STUDENT_ID, UUID.randomUUID().toString());
     student2.put(Constants.DOC_TYPE, Constants.STUDENT_DOC_TYPE);
     student2.put(Constants.NAME, "Chris Wallas");
-    student2.put(Constants.PHONE_NUMBER,new Random().nextLong());
+    student2.put(Constants.PHONE_NUMBER,getPhoneNumber());
     student2.put(Constants.DEPARTMENT_NAME, Departments.COMPUTER_SCIENCE);
     student2.put(Constants.DEPARTMENT_ID, Departments.COMPUTER_SCIENCE.department_id);
 
@@ -33,7 +33,7 @@ public class StudentDataSource {
     student3.put(Constants.STUDENT_ID, UUID.randomUUID().toString());
     student3.put(Constants.DOC_TYPE, Constants.STUDENT_DOC_TYPE);
     student3.put(Constants.NAME, "Peter Parker");
-    student3.put(Constants.PHONE_NUMBER,new Random().nextLong());
+    student3.put(Constants.PHONE_NUMBER,getPhoneNumber());
     student3.put(Constants.DEPARTMENT_NAME, Departments.MECHANICAL_ENGINEERING);
     student3.put(Constants.DEPARTMENT_ID, Departments.MECHANICAL_ENGINEERING.department_id);
 
@@ -42,7 +42,7 @@ public class StudentDataSource {
     student4.put(Constants.STUDENT_ID, UUID.randomUUID().toString());
     student4.put(Constants.DOC_TYPE, Constants.STUDENT_DOC_TYPE);
     student4.put(Constants.NAME, "Ramesh Choudhary");
-    student4.put(Constants.PHONE_NUMBER,new Random().nextLong());
+    student4.put(Constants.PHONE_NUMBER,getPhoneNumber());
     student4.put(Constants.DEPARTMENT_NAME, Departments.CIVIL_ENGINEERING);
     student4.put(Constants.DEPARTMENT_ID, Departments.CIVIL_ENGINEERING.department_id);
 
@@ -51,7 +51,7 @@ public class StudentDataSource {
     student5.put(Constants.STUDENT_ID, UUID.randomUUID().toString());
     student5.put(Constants.DOC_TYPE, Constants.STUDENT_DOC_TYPE);
     student5.put(Constants.NAME, "Lisa Parker");
-    student5.put(Constants.PHONE_NUMBER,new Random().nextLong());
+    student5.put(Constants.PHONE_NUMBER,getPhoneNumber());
     student5.put(Constants.DEPARTMENT_NAME, Departments.ELECTRIC_ENGINEERING);
     student5.put(Constants.DEPARTMENT_ID, Departments.ELECTRIC_ENGINEERING.department_id);
 
@@ -64,6 +64,12 @@ public class StudentDataSource {
 
     return students;
 
+  }
+
+  private static String getPhoneNumber() {
+    long number = new Random().nextLong();
+    if(number<0) {number *=-1;}
+    return String.valueOf(number).substring(0,10);
   }
 
 }
