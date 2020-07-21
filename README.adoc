@@ -7,7 +7,7 @@ To run this application successfully please make sure Redis is running on defaul
 
 == Curl commands to use the REST API's
 
-* INSERT Student
+**INSERT Student**
 
 
 Successful insertion operation will provide a student id in response. This student id can be used for further operations.
@@ -26,7 +26,7 @@ curl --request POST \
 ```
 
 
-* GET Student
+**GET Student**
 
 ```
 curl --request GET \
@@ -35,7 +35,7 @@ curl --request GET \
 
 
 
-* UPDATE Student
+**UPDATE Student**
 
 ```
 curl --request PUT \
@@ -50,7 +50,7 @@ curl --request PUT \
 
 ```
 
-* DELETE Student
+**DELETE Student**
 
 ```
 curl --request DELETE \
