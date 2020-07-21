@@ -9,7 +9,9 @@ To run this application successfully please make sure Redis is running on defaul
 
 * INSERT Student
 
-  Successful insertion operation will provide a student id in response. This student id can be used for further operations.
+
+Successful insertion operation will provide a student id in response. This student id can be used for further operations.
+
 
 ```
 curl --request POST \
