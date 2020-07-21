@@ -56,7 +56,7 @@ curl --request DELETE \
 
 ```
 
-== Possible values for departmentName
+== Possible values for DepartmentName
 
 ```
  COMPUTER_SCIENCE
