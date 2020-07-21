@@ -1,76 +1,76 @@
 
-== About this application
+= Rxvertx-college
+
+=== About this application
 
 This application is a basic implementation of Reactive Vertx. This application has basic supporting CRUD operation. It uses event bus to communicate between Verticles. 
 
 This application uses Redis database.To run this application successfully please make sure Redis DB is running on default port 6379.
 
 
-== Curl commands to use the REST API's
+=== Curl commands to use the REST API's
 
-**INSERT Student**
-
-
-Successful insertion operation will provide a student id in response. This student id can be used for further operations.
+* **INSERT Student**
 
 
-```
-curl --request POST \
-  --url http://localhost:8080/students \
-  --header 'content-type: application/json' \
-  --data '{
-	"docType": "STUDENT",
-	"name": "Robert Parker",
-	"phoneNumber": 17922599889,
-	"DepartmentName": "CIVIL_ENGINEERING"
-}'
-```
-
-
-**GET Student**
-
-```
-curl --request GET \
-  --url http://localhost:8080/students/{studentId}
-```
+	Successful insertion operation will provide a student id in response. This student id can be used for further operations.
 
 
 
-**UPDATE Student**
-
-```
-curl --request PUT \
-  --url http://localhost:8080/students/{studentId} \
-  --header 'content-type: application/json' \
-  --data '{
-  "docType": "STUDENT",
-  "name": "Robe Wallas",
-  "phoneNumber": 17922599889,
-  "DepartmentName": "MATHES",
-}'
-
-```
-
-**DELETE Student**
-
-```
-curl --request DELETE \
-  --url http://localhost:8080/students/{studentId}
-
-```
-
-== Possible values for DepartmentName
-
-```
- COMPUTER_SCIENCE
- ELECTRIC_ENGINEERING
- MECHANICAL_ENGINEERING
- CIVIL_ENGINEERING
- MATHES
-
-```
+		```
+		curl --request POST \
+		  --url http://localhost:8080/students \
+		  --header 'content-type: application/json' \
+		  --data '{
+			"docType": "STUDENT",
+			"name": "Robert Parker",
+			"phoneNumber": 17922599889,
+			"DepartmentName": "CIVIL_ENGINEERING"
+		}'
+		```
 
 
+* **GET Student**
+
+		```
+		curl --request GET \
+		  --url http://localhost:8080/students/{studentId}
+		```
+
+
+
+* **UPDATE Student**
+
+		```
+		curl --request PUT \
+		  --url http://localhost:8080/students/{studentId} \
+		  --header 'content-type: application/json' \
+		  --data '{
+		  "docType": "STUDENT",
+		  "name": "Robe Wallas",
+		  "phoneNumber": 17922599889,
+		  "DepartmentName": "MATHES",
+		}'
+
+		```
+
+* **DELETE Student**
+
+		```
+		curl --request DELETE \
+		  --url http://localhost:8080/students/{studentId}
+		```
+
+=== Possible values for DepartmentName
+
+	```
+	 COMPUTER_SCIENCE
+	 ELECTRIC_ENGINEERING
+	 MECHANICAL_ENGINEERING
+	 CIVIL_ENGINEERING
+	 MATHES
+
+	```
 
 
 
@@ -79,7 +79,9 @@ curl --request DELETE \
 
 
 
-= Rxvertx-college
+
+
+
 
 image:https://img.shields.io/badge/vert.x-3.9.2-purple.svg[link="https://vertx.io"]
 
