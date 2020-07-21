@@ -41,6 +41,7 @@
 
 package com.example.vertx.rxvertx_college;
 
+import com.example.vertx.rxvertx_college.constants.Constants;
 import com.example.vertx.rxvertx_college.datasource.Departments;
 import com.example.vertx.rxvertx_college.datasource.StudentDataSource;
 //import io.vertx.core.Future;x
@@ -54,7 +55,6 @@ import io.vertx.reactivex.core.*;
 import io.vertx.reactivex.core.eventbus.EventBus;
 import io.vertx.reactivex.core.eventbus.Message;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
-import io.vertx.reactivex.core.http.HttpClient;
 import io.vertx.reactivex.core.http.HttpServerResponse;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
@@ -73,6 +73,14 @@ import java.util.*;
  */
 public class MainVerticle extends AbstractVerticle {
 
+
+  public static final int SUCCESS = 200;
+  public static final String STUDENT_ID = "studentId";
+  public static final String DEPARTMENT_NAME = "DepartmentName";
+  public static final String STUDENT_DOC_TYPE = "STUDENT";
+  public static final String DEPARTMENT_ID = "DepartmentID";
+  public static final String DOC_TYPE = "docType";
+  public static final String RESPONSE_REPLY = "Thank you!";
 
   RedisClient redisClient;
 
@@ -130,7 +138,7 @@ public class MainVerticle extends AbstractVerticle {
     eventBus.send("redis.consumer","Hello receiver", res -> {
       eventBus.consumer("redis.get.consumer", re -> {
         System.out.println(re.body().toString());
-        serverResponse.setStatusCode(200).end(re.body().toString());
+        serverResponse.setStatusCode(SUCCESS).end(re.body().toString());
       });
       messageResponse(serverResponse, res);
     });
@@ -170,7 +178,7 @@ public class MainVerticle extends AbstractVerticle {
 
           }
       });
-      serverResponse.setStatusCode(200).end(students.toString());
+      serverResponse.setStatusCode(SUCCESS).end(students.toString());
     }
   }
 
@@ -181,29 +189,50 @@ public class MainVerticle extends AbstractVerticle {
 
     String studentId = UUID.randomUUID().toString();
 
-    student.put("studentId", studentId);
+    student.put(STUDENT_ID, studentId);
 
     HttpServerResponse serverResponse = routingContext.response();
 
     Optional<Departments>  departmentName =
-      Arrays.stream(Departments.values()).filter(e -> e.toString().equals(student.getString("DepartmentName"))).findAny();
+      Arrays.stream(Departments.values()).filter(e -> e.toString().equals(student.getString(DEPARTMENT_NAME))).findAny();
 
 //    validations before inserting students
-    if(studentId==null || !"STUDENT".equals(student.getString("docType"))
+    if(studentId==null || !STUDENT_DOC_TYPE.equals(student.getString(DOC_TYPE))
       || !departmentName.isPresent()) {
 
       serverResponse.setStatusCode(400).end("Invalid student request");
 
     } else {
-      student.put("DepartmentID", departmentName.get().department_id);
 
-      redisClient.set(student.getString("studentId"),student.toString(), r -> {
-        if (r.succeeded()) {
-          serverResponse.setStatusCode(200).end(student.toString());
-        } else if(r.failed()) {
-          serverResponse.setStatusCode(500).end("Failed to insert the student");
+      student.put(DEPARTMENT_ID, departmentName.get().department_id);
+
+      eventBus.send(Constants.INSERT_STUDENT_REQUEST,student.toString(),insertRequest -> {
+        if(insertRequest.succeeded()) {
+          System.out.println(insertRequest.result().body().toString());
+        } else {
+          routingContext.response().setStatusCode(500).end("Failed to process the request");
         }
       });
+
+      MessageConsumer<String> consumer = eventBus.consumer(Constants.INSERT_STUDENT_RESPONSE);
+
+      consumer.handler(responseResult -> {
+        responseResult.reply(RESPONSE_REPLY);
+        if(!responseResult.body().equals("500")) {
+          routingContext.response().setStatusCode(SUCCESS).end(responseResult.body());
+        } else {
+          routingContext.response().setStatusCode(500).end("Failed to insert student");
+        }
+        consumer.unregister();
+      });
+
+//      redisClient.set(student.getString("studentId"),student.toString(), r -> {
+//        if (r.succeeded()) {
+//          serverResponse.setStatusCode(SUCCESS).end(student.toString());
+//        } else if(r.failed()) {
+//          serverResponse.setStatusCode(500).end("Failed to insert the student");
+//        }
+//      });
 
     }
   }
@@ -237,15 +266,35 @@ public class MainVerticle extends AbstractVerticle {
 
           if(r!=null && r.result()!=null) {
 
-            redisClient.set(student.getString("studentId"),student.toString(), u -> {
-
-              if (u.succeeded()) {
-                serverResponse.setStatusCode(200).end(student.toString());
-              } else if(u.failed()) {
-                serverResponse.setStatusCode(500).end("Failed to insert the student");
+            eventBus.send(Constants.INSERT_STUDENT_REQUEST,student.toString(),insertRequest -> {
+              if(insertRequest.succeeded()) {
+                System.out.println(insertRequest.result().body().toString());
+              } else {
+                routingContext.response().setStatusCode(500).end("Failed to process the request");
               }
-
             });
+
+            MessageConsumer<String> consumer = eventBus.consumer(Constants.INSERT_STUDENT_RESPONSE);
+
+            consumer.handler(responseResult -> {
+              responseResult.reply(RESPONSE_REPLY);
+              if(!responseResult.body().equals("500")) {
+                routingContext.response().setStatusCode(SUCCESS).end(responseResult.body());
+              } else {
+                routingContext.response().setStatusCode(500).end("Failed to insert student");
+              }
+              consumer.unregister();
+            });
+
+//            redisClient.set(student.getString("studentId"),student.toString(), u -> {
+//
+//              if (u.succeeded()) {
+//                serverResponse.setStatusCode(SUCCESS).end(student.toString());
+//              } else if(u.failed()) {
+//                serverResponse.setStatusCode(500).end("Failed to insert the student");
+//              }
+//
+//            });
 
           } else {
 
@@ -267,7 +316,7 @@ public class MainVerticle extends AbstractVerticle {
 
     String studentId = routingContext.pathParam("studentId");
 
-    eventBus.send("get.consumer",studentId, requestResult -> {
+    eventBus.send(Constants.GET_ADDRESS_REQUEST,studentId, requestResult -> {
       if(requestResult.succeeded()) {
         System.out.println(requestResult.result().body().toString());
       } else {
@@ -275,21 +324,17 @@ public class MainVerticle extends AbstractVerticle {
       }
     });
 
-    MessageConsumer<String> consumer = eventBus.consumer("get.consumer.response");
+    MessageConsumer<String> consumer = eventBus.consumer(Constants.GET_ADDRESS_RESPONSE);
 
     consumer.handler(responseResult -> {
-      responseResult.reply("Thank you!");
+      responseResult.reply(RESPONSE_REPLY);
       if(responseResult.body().toString().equals("400")) {
         routingContext.response().setStatusCode(400).end("Student id not found");
         } else {
-        routingContext.response().setStatusCode(200).end(responseResult.body().toString());
+        routingContext.response().setStatusCode(SUCCESS).end(responseResult.body().toString());
         }
       consumer.unregister();
       });
-
-//    redisClient.get(studentId, r -> {
-//      RedisResponseHandler.getStudent(serverResponse, r);
-//    });
 
   }
 
@@ -300,18 +345,40 @@ public class MainVerticle extends AbstractVerticle {
 
     String studentId = routingContext.pathParam("studentId");
 
-    redisClient.del(studentId, r -> {
-      if(r.succeeded()) {
-        if(r!=null && r.result()!=null) {
-          System.out.println("Successfully deleted the Key" + r.result());
-          serverResponse.setStatusCode(200).end("Student deleted successfully");
-        } else {
-          serverResponse.setStatusCode(400).end("Student with the provided key not found");
-        }
-      } else if(r.failed()) {
-          serverResponse.setStatusCode(500).end("Failed to execute the delete operation");
+    eventBus.send(Constants.DELETE_ADDRESS_REQUEST,studentId, requestResult -> {
+      if(requestResult.succeeded()) {
+        System.out.println(requestResult.result().body().toString());
+      } else {
+        serverResponse.setStatusCode(500).end("Failed to process the request");
       }
+
+      MessageConsumer<String> consumer = eventBus.consumer(Constants.DELETE_ADDRESS_RESPONSE);
+
+      consumer.handler(responseReply -> {
+        responseReply.reply(RESPONSE_REPLY);
+        if(responseReply.body().toString().equals("200")) {
+          serverResponse.setStatusCode(SUCCESS).end("Student deleted Successfully");
+        } else {
+          serverResponse.setStatusCode(500).end("Failed to delete the student record");
+        }
+        consumer.unregister();
+      });
+
+
     });
+
+//    redisClient.del(studentId, r -> {
+//      if(r.succeeded()) {
+//        if(r!=null && r.result()!=null) {
+//          System.out.println("Successfully deleted the Key" + r.result());
+//          serverResponse.setStatusCode(200).end("Student deleted successfully");
+//        } else {
+//          serverResponse.setStatusCode(400).end("Student with the provided key not found");
+//        }
+//      } else if(r.failed()) {
+//          serverResponse.setStatusCode(500).end("Failed to execute the delete operation");
+//      }
+//    });
   }
 
 
@@ -364,7 +431,7 @@ public class MainVerticle extends AbstractVerticle {
         if(e!=null && e.result()!=null) {
 //              result.add(e.result().toString());
         System.out.println("Value found: "+e);
-        serverResponse.setStatusCode(200).end(e.toString());} else {
+        serverResponse.setStatusCode(SUCCESS).end(e.toString());} else {
           serverResponse.setStatusCode(400).end("Value not found");
         }
 //              System.out.println("Successfully received the value "+e.result());
