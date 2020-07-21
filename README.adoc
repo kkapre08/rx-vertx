@@ -1,3 +1,83 @@
+
+== About this application
+
+This is a basic implementation of Reactive Vertx REST API with event bus. This application uses Redis database.
+To run this application successfully please make sure Redis is running on default port 6379.
+
+
+== Curl commands to use the REST API's
+
+**INSERT Student**
+
+
+Successful insertion operation will provide a student id in response. This student id can be used for further operations.
+
+
+```
+curl --request POST \
+  --url http://localhost:8080/students \
+  --header 'content-type: application/json' \
+  --data '{
+	"docType": "STUDENT",
+	"name": "Robert Parker",
+	"phoneNumber": 17922599889,
+	"DepartmentName": "CIVIL_ENGINEERING"
+}'
+```
+
+
+**GET Student**
+
+```
+curl --request GET \
+  --url http://localhost:8080/students/{studentId}
+```
+
+
+
+**UPDATE Student**
+
+```
+curl --request PUT \
+  --url http://localhost:8080/students/{studentId} \
+  --header 'content-type: application/json' \
+  --data '{
+  "docType": "STUDENT",
+  "name": "Robe Wallas",
+  "phoneNumber": 17922599889,
+  "DepartmentName": "MATHES",
+}'
+
+```
+
+**DELETE Student**
+
+```
+curl --request DELETE \
+  --url http://localhost:8080/students/{studentId}
+
+```
+
+== Possible values for DepartmentName
+
+```
+ COMPUTER_SCIENCE
+ ELECTRIC_ENGINEERING
+ MECHANICAL_ENGINEERING
+ CIVIL_ENGINEERING
+ MATHES
+
+```
+
+
+
+
+
+
+
+
+
+
 = Rxvertx-college
 
 image:https://img.shields.io/badge/vert.x-3.9.2-purple.svg[link="https://vertx.io"]
@@ -27,5 +107,4 @@ To run your application:
 * https://stackoverflow.com/questions/tagged/vert.x?sort=newest&pageSize=15[Vert.x Stack Overflow]
 * https://groups.google.com/forum/?fromgroups#!forum/vertx[Vert.x User Group]
 * https://gitter.im/eclipse-vertx/vertx-users[Vert.x Gitter]
-
 
