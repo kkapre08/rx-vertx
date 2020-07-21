@@ -13,7 +13,7 @@ This application uses Redis database.To run this application successfully please
 * **INSERT Student**
 
 
-	Successful insertion operation will provide a student id in response. This student id can be used for further operations.
+Successful insertion operation will provide a student id in response. This student id can be used for further operations.
 
 
 
