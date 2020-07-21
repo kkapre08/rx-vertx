@@ -17,60 +17,59 @@ Successful insertion operation will provide a student id in response. This stude
 
 
 
-		```
-		curl --request POST \
-		  --url http://localhost:8080/students \
-		  --header 'content-type: application/json' \
-		  --data '{
-			"docType": "STUDENT",
-			"name": "Robert Parker",
-			"phoneNumber": 17922599889,
-			"DepartmentName": "CIVIL_ENGINEERING"
-		}'
-		```
+```
+curl --request POST \
+	  --url http://localhost:8080/students \
+	  --header 'content-type: application/json' \
+	  --data '{
+		"docType": "STUDENT",
+		"name": "Robert Parker",
+		"phoneNumber": 17922599889,
+		"DepartmentName": "CIVIL_ENGINEERING"
+	}'	
+```
 
 
 * **GET Student**
 
-		```
-		curl --request GET \
-		  --url http://localhost:8080/students/{studentId}
-		```
+```
+curl --request GET \
+		  --url http://localhost:8080/students/{studentId}		
+```
 
 
 
 * **UPDATE Student**
 
-		```
-		curl --request PUT \
-		  --url http://localhost:8080/students/{studentId} \
-		  --header 'content-type: application/json' \
-		  --data '{
-		  "docType": "STUDENT",
-		  "name": "Robe Wallas",
-		  "phoneNumber": 17922599889,
-		  "DepartmentName": "MATHES",
-		}'
+```
+curl --request PUT \
+  --url http://localhost:8080/students/{studentId} \
+  --header 'content-type: application/json' \
+  --data '{
+	  "docType": "STUDENT",
+	  "name": "Robe Wallas",
+	  "phoneNumber": 17922599889,
+	  "DepartmentName": "MATHES",
+	}'
 
-		```
+```
 
 * **DELETE Student**
 
-		```
-		curl --request DELETE \
-		  --url http://localhost:8080/students/{studentId}
-		```
+```
+curl --request DELETE \
+  --url http://localhost:8080/students/{studentId}
+```
 
 === Possible values for DepartmentName
 
-	```
-	 COMPUTER_SCIENCE
-	 ELECTRIC_ENGINEERING
-	 MECHANICAL_ENGINEERING
-	 CIVIL_ENGINEERING
-	 MATHES
-
-	```
+```
+ COMPUTER_SCIENCE
+ ELECTRIC_ENGINEERING
+ MECHANICAL_ENGINEERING
+ CIVIL_ENGINEERING
+ MATHES
+```
 
 
 
